@@ -1,57 +1,53 @@
-import React from 'react';
-import TodoItem from './TodoItem'
+import React from 'react'
+import store from './store'
+import { Button, Input, List} from 'antd'
 
-class TodoList extends React.Component {
-
-    state = {
-        list : [],
-        inputValue : ""
-    }
-  
-    handleChangeInput = (event) => {
-        this.setState({
-            inputValue:event.target.value
-        })
+class TodoList extends React.Component{
+    constructor(props) {
+        super(props)
+        this.state = store.getState()
+        store.subscribe(()=> {this.setState(store.getState())})
     }
 
-    handleAddItem = () => {
-        this.setState({
-            list : [this.state.inputValue,...this.state.list],
-            inputValue : ""
-        })
+    handleInputValue = (e) => {
+        const action = {
+            type : 'change_input_value',
+            value : e.target.value
+        }
+        store.dispatch(action)
     }
 
-    handleDeleteItem = (index) => {
-        var arr = this.state.list
-        arr.splice(index,1)
-        this.setState({
-            list : arr
-        })  
+    handleAddItem() {
+        const action = {
+            type : 'new_item'
+        }
+        store.dispatch(action)
     }
 
-    getInputItem = () => {
-        return(
-            this.state.list.map((item,index)=> {
-                return (
-                    <TodoItem key={index} name={item} index={index} delete={this.handleDeleteItem}/>
-                )
-            })
+    handleItemClick = (index) => {
+        const action = {
+            type : 'handle_item_change',
+            value : index
+        }
+        store.dispatch(action)
+    } 
+
+    render() {
+        return (
+            <div>
+                <Input style={{width:300}} value={this.state.inputValue} onChange={this.handleInputValue}></Input>
+                <Button type="primary" onClick={this.handleAddItem}>add</Button>
+                <List
+                    bordered
+                    style={{width:300}}
+                    dataSource={this.state.list}
+                    renderItem={(item,index) => (
+                        <List.Item onClick = {()=> {this.handleItemClick(index)}}>{item}</List.Item>
+                    )}
+                />
+            </div>
         )
     }
-
-    
-    render() {
-        return(
-            <div>
-                <input value={this.state.inputValue} onChange={this.handleChangeInput}/>
-                <button onClick={this.handleAddItem}>add</button>
-                <ul>
-                    {this.getInputItem()}
-                </ul>
-            </div>
-        )    
-    }
-  
 }
 
-export default TodoList;
+export default TodoList
