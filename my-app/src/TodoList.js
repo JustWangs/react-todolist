@@ -1,53 +1,54 @@
-import React from 'react'
+import React from 'react';
 import store from './store'
-import { Button, Input, List} from 'antd'
+import {Input,Button,List,Modal} from 'antd'
+import {actionCreator} from './store/actionCreator'
+const { confirm } = Modal;
 
 class TodoList extends React.Component{
+    
     constructor(props) {
         super(props)
         this.state = store.getState()
         store.subscribe(()=> {this.setState(store.getState())})
     }
 
-    handleInputValue = (e) => {
-        const action = {
-            type : 'change_input_value',
-            value : e.target.value
-        }
+    handleInputValue = (event) => {
+        const action = actionCreator.CHANGE_INPUT_VALUE(event.target.value)
         store.dispatch(action)
     }
 
-    handleAddItem() {
-        const action = {
-            type : 'new_item'
-        }
+    handleAddItem = () => {
+        const action = actionCreator.CHANGE_ADD_VALUE()
         store.dispatch(action)
     }
 
-    handleItemClick = (index) => {
-        const action = {
-            type : 'handle_item_change',
-            value : index
-        }
-        store.dispatch(action)
-    } 
-
+    handleDelItem = (index)=> {
+        confirm({
+            title: 'Do you Want to delete these items?',
+            onOk() {
+                const action = actionCreator.HANDLE_DEL_VALUE(index)
+                store.dispatch(action)
+            },
+            onCancel() {},
+          });
+    }
+    
     render() {
-        return (
+        return(
             <div>
-                <Input style={{width:300}} value={this.state.inputValue} onChange={this.handleInputValue}></Input>
+                <Input style={{width:300}} onChange={this.handleInputValue} value={this.state.inputValue}></Input>
                 <Button type="primary" onClick={this.handleAddItem}>add</Button>
                 <List
-                    bordered
                     style={{width:300}}
+                    bordered
                     dataSource={this.state.list}
                     renderItem={(item,index) => (
-                        <List.Item onClick = {()=> {this.handleItemClick(index)}}>{item}</List.Item>
+                        <List.Item onClick = {()=> {this.handleDelItem(index)}}> {item} </List.Item>
                     )}
                 />
             </div>
-        )
+        ) 
     }
 }
 
-export default TodoList
+export default TodoList;
